@@ -12,6 +12,8 @@ class D1ProfileCustomizer {
     private manipulator: D1DOMManipulator;
     private lastPageStructure: PageStructure | null = null;
     private lastAction = 'Initialized';
+    private isEnabled = false;
+    private originalPosition: { parent: HTMLElement; nextSibling: Node | null } | null = null;
     
     constructor() {
         this.logger = new D1Logger();
@@ -35,13 +37,24 @@ class D1ProfileCustomizer {
             this.logger.info('✅ Confirmed we are on D1 Student Profile page');
             this.logger.info(`🌐 Current URL: ${window.location.href}`);
             
-            // Immediate execution - no waiting needed since elements are available
+            // Analyze page structure but don't auto-customize
             const pageStructure = this.analyzer.analyzePage();
             this.lastPageStructure = pageStructure;
             this.logger.logPageStructure(pageStructure);
             
-            // Attempt to customize the page
-            await this.customizePage(pageStructure);
+            // Store original position for restoration
+            if (pageStructure.customFieldsSection) {
+                this.storeOriginalPosition(pageStructure.customFieldsSection);
+            }
+            
+            // Check stored extension state
+            const result = await chrome.storage.local.get(['extensionEnabled']);
+            this.isEnabled = result.extensionEnabled || false;
+            
+            // Apply enhancement if enabled
+            if (this.isEnabled) {
+                await this.customizePage(pageStructure);
+            }
             
         } catch (error) {
             this.logger.error('❌ Failed to initialize D1 Profile Customizer:', error);
@@ -62,6 +75,73 @@ class D1ProfileCustomizer {
                 this.manipulator.isAlreadyMoved(structure.customFieldsSection) : false,
             lastAction: this.lastAction
         };
+    }
+    
+    /**
+     * Store original position for restoration
+     */
+    private storeOriginalPosition(element: HTMLElement): void {
+        this.originalPosition = {
+            parent: element.parentElement!,
+            nextSibling: element.nextElementSibling
+        };
+    }
+    
+    /**
+     * Enable the enhancement
+     */
+    async enableEnhancement(): Promise<boolean> {
+        try {
+            this.isEnabled = true;
+            this.lastAction = 'Enhancement enabled';
+            
+            if (!this.lastPageStructure) {
+                this.lastPageStructure = this.analyzer.analyzePage();
+            }
+            
+            const success = await this.customizePage(this.lastPageStructure);
+            return success;
+        } catch (error) {
+            this.lastAction = 'Enable error: ' + error;
+            return false;
+        }
+    }
+    
+    /**
+     * Disable the enhancement
+     */
+    async disableEnhancement(): Promise<boolean> {
+        try {
+            this.isEnabled = false;
+            this.lastAction = 'Enhancement disabled';
+            
+            if (this.lastPageStructure?.customFieldsSection && this.originalPosition) {
+                this.restoreOriginalPosition(this.lastPageStructure.customFieldsSection);
+            }
+            
+            return true;
+        } catch (error) {
+            this.lastAction = 'Disable error: ' + error;
+            return false;
+        }
+    }
+    
+    /**
+     * Restore element to original position
+     */
+    private restoreOriginalPosition(element: HTMLElement): void {
+        if (!this.originalPosition) return;
+        
+        // Remove any styling and indicators
+        this.manipulator.removeMovedIndicator(element);
+        this.manipulator.removeCustomStyling(element);
+        
+        // Move back to original position
+        if (this.originalPosition.nextSibling) {
+            this.originalPosition.parent.insertBefore(element, this.originalPosition.nextSibling);
+        } else {
+            this.originalPosition.parent.appendChild(element);
+        }
     }
     
     /**
@@ -121,7 +201,6 @@ class D1ProfileCustomizer {
             if (success) {
                 this.logger.success('🎉 Successfully moved Custom Fields section!');
                 this.manipulator.addMovedIndicator(structure.customFieldsSection);
-                this.manipulator.scrollToElement(structure.customFieldsSection);
                 this.lastAction = 'Successfully moved Custom Fields section';
                 return true;
             } else {
@@ -313,30 +392,36 @@ class D1DOMManipulator {
     }
     
     /**
-     * Add visual indicator that section was moved
+     * Add visual indicator that section was moved (removed per user request)
      */
     addMovedIndicator(element: HTMLElement): void {
-        const indicator = document.createElement('div');
-        indicator.id = this.MOVED_INDICATOR_ID;
-        indicator.innerHTML = `
-            <div style="
-                background: linear-gradient(135deg, #007cba, #005a8a);
-                color: white;
-                padding: 6px 12px;
-                font-size: 12px;
-                font-weight: bold;
-                border-radius: 6px;
-                margin-bottom: 8px;
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            ">
-                📍 Custom Fields moved below Student Status by D1 Customizer
-            </div>
-        `;
-        
-        element.insertBefore(indicator, element.firstChild);
+        // Visual indicator removed per user request
+        // Just mark the element internally for tracking
+        element.setAttribute('data-d1-customizer-moved', 'true');
+    }
+    
+    /**
+     * Remove moved indicator
+     */
+    removeMovedIndicator(element: HTMLElement): void {
+        const indicator = element.querySelector(`#${this.MOVED_INDICATOR_ID}`);
+        if (indicator) {
+            indicator.remove();
+        }
+        element.removeAttribute('data-d1-customizer-moved');
+    }
+    
+    /**
+     * Remove custom styling
+     */
+    removeCustomStyling(element: HTMLElement): void {
+        // Remove the custom styles we applied
+        element.style.border = '';
+        element.style.borderRadius = '';
+        element.style.margin = '';
+        element.style.background = '';
+        element.style.boxShadow = '';
+        element.style.position = '';
     }
     
     /**
@@ -403,6 +488,32 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 isAlreadyMoved: false,
                 lastAction: 'Extension not initialized'
             });
+        }
+        return;
+    }
+    
+    if (message.action === 'enable') {
+        const customizer = (window as any).d1Customizer;
+        if (customizer) {
+            customizer.enableEnhancement().then((success) => {
+                sendResponse({ success: success });
+            });
+            return true; // Keep channel open for async response
+        } else {
+            sendResponse({ success: false, error: 'Extension not initialized' });
+        }
+        return;
+    }
+    
+    if (message.action === 'disable') {
+        const customizer = (window as any).d1Customizer;
+        if (customizer) {
+            customizer.disableEnhancement().then((success) => {
+                sendResponse({ success: success });
+            });
+            return true; // Keep channel open for async response
+        } else {
+            sendResponse({ success: false, error: 'Extension not initialized' });
         }
         return;
     }

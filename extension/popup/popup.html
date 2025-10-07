@@ -19,85 +19,28 @@
       </div>
     </div>
 
-    <!-- Status Section -->
-    <div class="status-section">
-      <div class="status-item">
-        <span class="status-icon" id="statusIcon">⚪</span>
-        <span class="status-text" id="statusText">Not on D1 page</span>
-      </div>
-      <div class="status-detail" id="statusDetail">
-        Navigate to a DestinyOne Student Profile page to activate customization.
-      </div>
-    </div>
-
-    <!-- Actions Section -->
-    <div class="actions-section">
-      <button id="refreshBtn" class="action-btn primary">
-        <span>🔄</span>
-        Check Current Page
-      </button>
-      
-      <button id="customizeBtn" class="action-btn secondary" disabled>
-        <span>📍</span>
-        Move Custom Fields
-      </button>
-    </div>
-
-    <!-- Info Section -->
-    <div class="info-section">
-      <details class="info-details">
-        <summary>About This Extension</summary>
-        <div class="info-content">
-          <p><strong>Purpose:</strong> Moves the Custom Fields section below the Student Status section in DestinyOne Student Profile pages for better workflow.</p>
-          
-          <p><strong>Features:</strong></p>
-          <ul>
-            <li>✅ Automatic detection of D1 Student Profile pages</li>
-            <li>📍 Smart positioning of Custom Fields section</li>
-            <li>🔍 Enhanced debugging and logging</li>
-            <li>♿ Accessibility and responsive design</li>
-          </ul>
-          
-          <p><strong>Version:</strong> 1.0.0</p>
+    <!-- Toggle Section -->
+    <div class="toggle-section">
+      <div class="toggle-container">
+        <div class="toggle-info">
+          <span class="toggle-label">Custom Fields Enhancement</span>
+          <span class="toggle-description" id="toggleDescription">Enable to move Custom Fields below Student Status</span>
         </div>
-      </details>
+        <label class="toggle-switch">
+          <input type="checkbox" id="extensionToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
 
-    <!-- Debug Section (only shown when needed) -->
-    <div class="debug-section" id="debugSection" style="display: none;">
-      <details class="debug-details">
-        <summary>Debug Information</summary>
-        <div class="debug-content">
-          <div class="debug-item">
-            <strong>Current URL:</strong>
-            <code id="debugUrl">-</code>
-          </div>
-          <div class="debug-item">
-            <strong>Page Title:</strong>
-            <code id="debugTitle">-</code>
-          </div>
-          <div class="debug-item">
-            <strong>Custom Fields Found:</strong>
-            <span id="debugCustomFields">-</span>
-          </div>
-          <div class="debug-item">
-            <strong>Student Status Found:</strong>
-            <span id="debugStudentStatus">-</span>
-          </div>
-          <div class="debug-item">
-            <strong>Last Action:</strong>
-            <span id="debugLastAction">-</span>
-          </div>
-        </div>
-      </details>
+    <!-- Status Indicator -->
+    <div class="status-indicator">
+      <div class="status-dot" id="statusDot"></div>
+      <span class="status-message" id="statusMessage">Ready</span>
     </div>
 
     <!-- Footer -->
     <div class="footer">
-      <div class="footer-links">
-        <a href="#" id="supportLink">Support</a>
-        <a href="#" id="feedbackLink">Feedback</a>
-      </div>
       <div class="footer-text">
         Made for Anne Arundel Community College
       </div>

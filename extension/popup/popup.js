@@ -7,43 +7,30 @@
 
 class D1PopupController {
   constructor() {
+    this.isEnabled = false;
     this.initializeElements();
     this.attachEventListeners();
     this.loadCurrentStatus();
   }
   
   initializeElements() {
-    this.statusIcon = document.getElementById('statusIcon');
-    this.statusText = document.getElementById('statusText');
-    this.statusDetail = document.getElementById('statusDetail');
-    this.refreshBtn = document.getElementById('refreshBtn');
-    this.customizeBtn = document.getElementById('customizeBtn');
-    this.debugSection = document.getElementById('debugSection');
+    this.toggleSwitch = document.getElementById('extensionToggle');
+    this.toggleDescription = document.getElementById('toggleDescription');
+    this.statusDot = document.getElementById('statusDot');
+    this.statusMessage = document.getElementById('statusMessage');
   }
   
   attachEventListeners() {
-    this.refreshBtn.addEventListener('click', () => this.handleRefresh());
-    this.customizeBtn.addEventListener('click', () => this.handleCustomize());
-    
-    const supportLink = document.getElementById('supportLink');
-    if (supportLink) {
-      supportLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.openSupportPage();
-      });
-    }
-    
-    const feedbackLink = document.getElementById('feedbackLink');
-    if (feedbackLink) {
-      feedbackLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.openFeedbackPage();
-      });
-    }
+    this.toggleSwitch.addEventListener('change', (e) => this.handleToggle(e.target.checked));
   }
   
   async loadCurrentStatus() {
     try {
+      // Get stored extension state
+      const result = await chrome.storage.local.get(['extensionEnabled']);
+      this.isEnabled = result.extensionEnabled || false;
+      this.toggleSwitch.checked = this.isEnabled;
+      
       const tab = await this.getCurrentTab();
       
       if (!tab.url) {
@@ -55,13 +42,16 @@ class D1PopupController {
       const isD1Page = this.isD1StudentProfilePage(tab.url);
       
       if (!isD1Page) {
-        this.updateStatus('inactive', 'Not on D1 Student Profile page', tab);
+        this.updateStatus('inactive', 'Navigate to a D1 Student Profile page');
         return;
       }
       
-      // Get detailed status from content script
-      const status = await this.getContentScriptStatus(tab.id);
-      this.updateStatus('active', 'D1 Student Profile page detected', tab, status);
+      // Update status based on toggle state and page
+      if (this.isEnabled) {
+        this.updateStatus('active', 'Enhancement active on this page');
+      } else {
+        this.updateStatus('ready', 'Ready - toggle to enable enhancement');
+      }
       
     } catch (error) {
       console.error('[D1-Popup] Error loading status:', error);
@@ -95,127 +85,78 @@ class D1PopupController {
     }
   }
   
-  updateStatus(type, message, tab, status) {
-    // Update status icon and text
+  updateStatus(type, message) {
+    // Update status indicator and message
+    this.statusDot.className = 'status-dot';
+    
     switch (type) {
       case 'active':
-        this.statusIcon.textContent = '🟢';
-        this.statusText.textContent = 'D1 Page Active';
-        this.statusDetail.textContent = 'Ready to customize Custom Fields positioning';
-        this.customizeBtn.removeAttribute('disabled');
+        this.statusDot.classList.add('active');
+        this.statusMessage.textContent = message;
+        this.toggleDescription.textContent = 'Custom Fields are positioned below Student Status';
         break;
         
-      case 'success':
-        this.statusIcon.textContent = '✅';
-        this.statusText.textContent = 'Customization Applied';
-        this.statusDetail.textContent = 'Custom Fields section moved successfully';
+      case 'ready':
+        this.statusMessage.textContent = message;
+        this.toggleDescription.textContent = 'Toggle to move Custom Fields below Student Status';
         break;
         
       case 'inactive':
-        this.statusIcon.textContent = '⚪';
-        this.statusText.textContent = 'Not on D1 Page';
-        this.statusDetail.textContent = 'Navigate to a DestinyOne Student Profile page to activate';
-        this.customizeBtn.setAttribute('disabled', '');
+        this.statusDot.classList.add('inactive');
+        this.statusMessage.textContent = message;
+        this.toggleDescription.textContent = 'Extension works on D1 Student Profile pages';
         break;
         
       case 'error':
-        this.statusIcon.textContent = '❌';
-        this.statusText.textContent = 'Error';
-        this.statusDetail.textContent = message;
-        this.customizeBtn.setAttribute('disabled', '');
+        this.statusDot.classList.add('inactive');
+        this.statusMessage.textContent = message;
+        this.toggleDescription.textContent = 'Please refresh the page and try again';
         break;
     }
-    
-    // Update debug information if available
-    if (tab || status) {
-      this.updateDebugInfo(tab, status);
-      this.debugSection.style.display = 'block';
-    }
   }
   
-  updateDebugInfo(tab, status) {
-    if (tab) {
-      const urlElement = document.getElementById('debugUrl');
-      const titleElement = document.getElementById('debugTitle');
-      
-      if (urlElement) urlElement.textContent = tab.url || 'Unknown';
-      if (titleElement) titleElement.textContent = tab.title || 'Unknown';
-    }
-    
-    if (status) {
-      const customFieldsElement = document.getElementById('debugCustomFields');
-      const studentStatusElement = document.getElementById('debugStudentStatus');
-      const lastActionElement = document.getElementById('debugLastAction');
-      
-      if (customFieldsElement) {
-        customFieldsElement.textContent = status.hasCustomFields ? '✅ Found' : '❌ Not Found';
-      }
-      if (studentStatusElement) {
-        studentStatusElement.textContent = status.hasStudentStatus ? '✅ Found' : '❌ Not Found';
-      }
-      if (lastActionElement) {
-        lastActionElement.textContent = status.lastAction || 'None';
-      }
-    }
-  }
-  
-  async handleRefresh() {
-    this.refreshBtn.textContent = '🔄 Checking...';
-    this.refreshBtn.setAttribute('disabled', '');
-    
+  async handleToggle(enabled) {
     try {
-      await this.loadCurrentStatus();
-    } finally {
-      setTimeout(() => {
-        this.refreshBtn.innerHTML = '<span>🔄</span>Check Current Page';
-        this.refreshBtn.removeAttribute('disabled');
-      }, 1000);
-    }
-  }
-  
-  async handleCustomize() {
-    this.customizeBtn.textContent = '📍 Moving...';
-    this.customizeBtn.setAttribute('disabled', '');
-    
-    try {
+      this.isEnabled = enabled;
+      
+      // Save state
+      await chrome.storage.local.set({ extensionEnabled: enabled });
+      
       const tab = await this.getCurrentTab();
       
-      if (!tab.id) {
-        throw new Error('No active tab found');
+      if (!tab.id || !this.isD1StudentProfilePage(tab.url)) {
+        // Just update the toggle state, don't do anything else
+        this.loadCurrentStatus();
+        return;
       }
       
-      // Send customize command to content script
-      const response = await chrome.tabs.sendMessage(tab.id, {
-        action: 'customize'
-      });
-      
-      if (response && response.success) {
-        this.updateStatus('success', 'Custom Fields moved successfully');
+      if (enabled) {
+        // Send enable command to content script
+        const response = await chrome.tabs.sendMessage(tab.id, {
+          action: 'enable'
+        });
+        
+        if (response && response.success) {
+          this.updateStatus('active', 'Enhancement activated');
+        } else {
+          this.updateStatus('error', 'Failed to activate enhancement');
+        }
       } else {
-        this.updateStatus('error', (response && response.error) || 'Failed to customize page');
+        // Send disable command to content script
+        const response = await chrome.tabs.sendMessage(tab.id, {
+          action: 'disable'
+        });
+        
+        this.updateStatus('ready', 'Enhancement disabled');
       }
       
     } catch (error) {
-      console.error('[D1-Popup] Customization error:', error);
-      this.updateStatus('error', 'Failed to communicate with page');
-    } finally {
-      setTimeout(() => {
-        this.customizeBtn.innerHTML = '<span>📍</span>Move Custom Fields';
-        this.customizeBtn.removeAttribute('disabled');
-      }, 2000);
+      console.error('[D1-Popup] Toggle error:', error);
+      this.updateStatus('error', 'Failed to update enhancement');
+      // Revert toggle state on error
+      this.toggleSwitch.checked = !enabled;
+      this.isEnabled = !enabled;
     }
-  }
-  
-  openSupportPage() {
-    chrome.tabs.create({
-      url: 'https://github.com/your-repo/d1-student-profile-customizer/issues'
-    });
-  }
-  
-  openFeedbackPage() {
-    chrome.tabs.create({
-      url: 'https://github.com/your-repo/d1-student-profile-customizer/discussions'
-    });
   }
 }
 

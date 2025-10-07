@@ -7,7 +7,7 @@ class AAACExtensionPortal {
     constructor() {
         this.correctPassword = 'aacc2025';
         this.githubRepo = 'djmotor90/aacc-d1-extension-portal';
-        this.currentVersion = '1.0.0';
+        this.currentVersion = '1.1.0';
         this.sessionKey = 'aacc_portal_authenticated';
         this.updateCheckInterval = 5 * 60 * 1000; // Check every 5 minutes
         
@@ -385,14 +385,42 @@ class AAACExtensionPortal {
     }
     
     /**
-     * Show update available dialog
+     * Show enhanced update available dialog with instructions
      */
     showUpdateAvailableDialog(newVersion) {
-        const message = `A new version (v${newVersion}) is available!\n\nWould you like to download it now?`;
+        const message = `🆕 New Version Available: v${newVersion}\n\n` +
+                       `Current: v${this.currentVersion}\n\n` +
+                       `New features and improvements available!\n\n` +
+                       `Click OK to download, then:\n` +
+                       `1. Extract the zip file\n` +
+                       `2. Replace your extension folder\n` +
+                       `3. Reload extension in Chrome\n\n` +
+                       `Would you like to download now?`;
         
         if (confirm(message)) {
             this.handleDownload(newVersion);
+            
+            // Show post-download instructions
+            setTimeout(() => {
+                this.showInstallationInstructions(newVersion);
+            }, 2000);
         }
+    }
+    
+    /**
+     * Show detailed installation instructions after download
+     */
+    showInstallationInstructions(version) {
+        const instructions = `📥 Download Complete: v${version}\n\n` +
+                           `Installation Steps:\n\n` +
+                           `1. 📁 Extract the downloaded zip file\n` +
+                           `2. 🌐 Open Chrome → chrome://extensions/\n` +
+                           `3. 🔄 Remove old extension (if present)\n` +
+                           `4. 📂 Click "Load unpacked" → select extracted folder\n` +
+                           `5. ✅ Extension updated and ready!\n\n` +
+                           `Need help? Check the portal FAQ or contact IT support.`;
+        
+        alert(instructions);
     }
     
     /**
