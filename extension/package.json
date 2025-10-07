@@ -1,0 +1,30 @@
+{
+  "name": "d1-student-profile-customizer",
+  "version": "1.0.0",
+  "description": "Chrome extension to customize DestinyOne Student Profile interface",
+  "main": "dist/content.js",
+  "scripts": {
+    "build": "npm run clean && npm run build:ts",
+    "build:ts": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rimraf dist",
+    "dev": "npm run build:watch",
+    "package": "npm run build && web-ext build --source-dir . --artifacts-dir packages"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.246",
+    "@types/node": "^20.8.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.2.2",
+    "web-ext": "^7.8.0"
+  },
+  "keywords": [
+    "chrome-extension",
+    "destinyone",
+    "d1",
+    "student-profile",
+    "education"
+  ],
+  "author": "D1 Customization Team",
+  "license": "MIT"
+}

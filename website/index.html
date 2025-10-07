@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D1 Student Profile Customizer - AACC Internal Tool</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+    <!-- Password Protection Overlay -->
+    <div id="passwordOverlay" class="password-overlay">
+        <div class="password-container">
+            <div class="aacc-logo">
+                <img src="assets/aacc-logo.png" alt="Anne Arundel Community College" onerror="this.style.display='none'">
+                <h1>D1 Extension Portal</h1>
+                <p>Anne Arundel Community College Internal Tool</p>
+            </div>
+            
+            <div class="password-form">
+                <label for="passwordInput">Enter Access Code:</label>
+                <input type="password" id="passwordInput" placeholder="Access code required">
+                <button type="button" id="submitPassword">Access Portal</button>
+                <div id="passwordError" class="error-message"></div>
+            </div>
+            
+            <div class="password-footer">
+                <p>🔐 This portal is restricted to authorized AACC personnel only</p>
+                <p>Contact IT Support if you need access</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Website Content -->
+    <div id="mainContent" class="main-content hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo-section">
+                        <img src="assets/aacc-logo.png" alt="AACC" class="logo" onerror="this.style.display='none'">
+                        <div class="title-group">
+                            <h1>D1 Student Profile Customizer</h1>
+                            <p>DestinyOne Enhancement Tool for AACC Staff</p>
+                        </div>
+                    </div>
+                    
+                    <div class="header-actions">
+                        <button id="logoutBtn" class="logout-btn">🚪 Logout</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Status Banner -->
+        <div class="status-banner" id="statusBanner">
+            <div class="container">
+                <div class="status-content">
+                    <span class="status-icon">🔄</span>
+                    <span class="status-text">Checking for updates...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="container">
+                
+                <!-- Extension Overview -->
+                <section class="hero-section">
+                    <div class="hero-content">
+                        <h2>🎯 Streamline Your D1 Student Profile Workflow</h2>
+                        <p class="hero-description">
+                            This Chrome extension automatically moves the Custom Fields section below 
+                            the Student Status section in DestinyOne Student Profile pages, making your 
+                            daily workflow more efficient and consistent.
+                        </p>
+                        
+                        <div class="version-info">
+                            <span class="version-badge" id="currentVersion">v1.0.0</span>
+                            <span class="update-status" id="updateStatus">✅ Up to date</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Installation Section -->
+                <section class="install-section">
+                    <div class="section-header">
+                        <h3>📥 Install Extension</h3>
+                        <p>Get started with the D1 Student Profile Customizer in 3 easy steps</p>
+                    </div>
+                    
+                    <div class="install-steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Download Extension</h4>
+                                <p>Click the download button to get the latest version</p>
+                                <button id="downloadBtn" class="download-btn">
+                                    <span class="btn-icon">📦</span>
+                                    Download Latest Version
+                                    <span class="btn-version" id="downloadVersion">v1.0.0</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Install in Chrome</h4>
+                                <p>Extract the zip file and load it as an unpacked extension</p>
+                                <div class="install-instructions">
+                                    <ol>
+                                        <li>Extract the downloaded zip file to a folder</li>
+                                        <li>Open Chrome and go to <code>chrome://extensions/</code></li>
+                                        <li>Enable "Developer mode" (top right)</li>
+                                        <li>Click "Load unpacked" and select the extracted folder</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Start Using</h4>
+                                <p>Navigate to any D1 Student Profile page to see it in action</p>
+                                <div class="usage-tips">
+                                    <ul>
+                                        <li>✅ Custom Fields section automatically moves below Student Status</li>
+                                        <li>🔍 Click the extension icon for manual control and status</li>
+                                        <li>📍 Look for the blue "moved by D1 Customizer" indicator</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Updates Section -->
+                <section class="updates-section">
+                    <div class="section-header">
+                        <h3>🔄 Automatic Updates</h3>
+                        <p>Stay current with the latest features and improvements</p>
+                    </div>
+                    
+                    <div class="update-info">
+                        <div class="update-card">
+                            <div class="update-icon">🚀</div>
+                            <div class="update-content">
+                                <h4>GitHub Integration</h4>
+                                <p>Updates are automatically pulled from our GitHub repository when new versions are released.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="update-card">
+                            <div class="update-icon">🔔</div>
+                            <div class="update-content">
+                                <h4>Update Notifications</h4>
+                                <p>You'll be notified when new versions are available right here on this portal.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="update-card">
+                            <div class="update-icon">⚡</div>
+                            <div class="update-content">
+                                <h4>Easy Installation</h4>
+                                <p>Simply download and replace your existing extension folder with the new version.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="manual-update">
+                        <button id="checkUpdatesBtn" class="check-updates-btn">
+                            <span>🔍</span>
+                            Check for Updates Now
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Support Section -->
+                <section class="support-section">
+                    <div class="section-header">
+                        <h3>🆘 Support & Troubleshooting</h3>
+                        <p>Need help? Here are common solutions and contact information</p>
+                    </div>
+                    
+                    <div class="support-content">
+                        <div class="faq-section">
+                            <h4>Common Issues</h4>
+                            <div class="faq-item">
+                                <details>
+                                    <summary>Extension doesn't work on D1 pages</summary>
+                                    <div class="faq-answer">
+                                        <p>Make sure you're on a Student Profile page in DestinyOne. The extension only activates on URLs containing 'studentProfile'. Check the extension popup for status information.</p>
+                                    </div>
+                                </details>
+                            </div>
+                            
+                            <div class="faq-item">
+                                <details>
+                                    <summary>Custom Fields section not moving</summary>
+                                    <div class="faq-answer">
+                                        <p>Try refreshing the page or clicking "Move Custom Fields" in the extension popup. The extension looks for specific elements that may load dynamically.</p>
+                                    </div>
+                                </details>
+                            </div>
+                            
+                            <div class="faq-item">
+                                <details>
+                                    <summary>How to update the extension</summary>
+                                    <div class="faq-answer">
+                                        <p>Download the latest version from this portal, extract it, and replace your existing extension folder. You may need to reload the extension in Chrome.</p>
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-section">
+                            <h4>Contact Support</h4>
+                            <div class="contact-methods">
+                                <div class="contact-item">
+                                    <span class="contact-icon">📧</span>
+                                    <div class="contact-info">
+                                        <strong>IT Support</strong>
+                                        <p>support@aacc.edu</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="contact-item">
+                                    <span class="contact-icon">📞</span>
+                                    <div class="contact-info">
+                                        <strong>Help Desk</strong>
+                                        <p>(410) 777-2800</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="contact-item">
+                                    <span class="contact-icon">🐛</span>
+                                    <div class="contact-info">
+                                        <strong>Report Bug</strong>
+                                        <p><a href="mailto:support@aacc.edu?subject=D1%20Extension%20Bug%20Report">Send Bug Report</a></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h4>About This Tool</h4>
+                        <p>Developed specifically for Anne Arundel Community College to enhance the DestinyOne Student Information System workflow.</p>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>Resources</h4>
+                        <ul>
+                            <li><a href="#installation">Installation Guide</a></li>
+                            <li><a href="#updates">Update System</a></li>
+                            <li><a href="#support">Support</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>Version Info</h4>
+                        <p>Current: <span id="footerVersion">v1.0.0</span></p>
+                        <p>Last Updated: <span id="lastUpdated">October 2025</span></p>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; 2025 Anne Arundel Community College. Internal tool for authorized personnel only.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="github-integration.js"></script>
+    
+    <!-- Initialize Enhanced Portal with GitHub Integration -->
+    <script>
+        // Override the default portal with enhanced version when available
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.EnhancedExtensionPortal) {
+                window.aaccPortal = new EnhancedExtensionPortal();
+            }
+        });
+    </script>
+</body>
+</html>

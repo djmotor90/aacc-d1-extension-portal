@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "sourceMap": true,
+    "removeComments": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "noImplicitThis": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
+    "types": ["chrome", "node"]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "packages"
+  ]
+}
