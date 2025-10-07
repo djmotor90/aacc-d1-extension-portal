@@ -165,8 +165,8 @@ class EnhancedExtensionPortal extends AAACExtensionPortal {
         super();
         
         // Initialize GitHub integration
-        // Update these with your actual repository details
-        this.github = new GitHubIntegration('your-org', 'd1-student-profile-customizer');
+        // Updated with actual repository details
+        this.github = new GitHubIntegration('djmotor90', 'aacc-d1-extension-portal');
         
         // Override the simulated methods with real GitHub integration
         this.setupRealGitHubIntegration();
