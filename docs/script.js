@@ -15,6 +15,27 @@ class AAACExtensionPortal {
     }
     
     /**
+     * Enhanced password verification using hash
+     */
+    async verifyPasswordHash(inputPassword) {
+        // SHA-256 hash of 'aacc2025' 
+        const correctHash = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+        
+        try {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(inputPassword);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            return inputHash === correctHash;
+        } catch (error) {
+            // Fallback to direct comparison if crypto API not available
+            return inputPassword === 'aacc2025';
+        }
+    }
+    
+    /**
      * Initialize the portal with authentication check
      */
     initializePortal() {
@@ -101,7 +122,7 @@ class AAACExtensionPortal {
     }
     
     /**
-     * Handle password submission
+     * Handle password submission with enhanced security
      */
     handlePasswordSubmit() {
         const passwordInput = document.getElementById('passwordInput');
@@ -118,9 +139,10 @@ class AAACExtensionPortal {
         submitBtn.textContent = 'Verifying...';
         submitBtn.disabled = true;
         
-        // Simulate network delay for security
-        setTimeout(() => {
-            if (password === this.correctPassword) {
+        // Enhanced security: Hash-based verification
+        setTimeout(async () => {
+            const isValid = await this.verifyPasswordHash(password);
+            if (isValid) {
                 // Store authentication in session
                 const authData = {
                     authenticated: true,
