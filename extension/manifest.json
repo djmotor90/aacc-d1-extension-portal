@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "D1 Student Profile Customizer",
-  "version": "1.1.1",
-  "description": "Customizes DestinyOne Student Profile interface by moving Custom Fields section below Student Status",
+  "name": "AACC D1 Student Profile Customizer",
+  "version": "1.2.0",
+  "description": "Official AACC tool for DestinyOne Student Profile interface - moves Custom Fields below Student Status",
   
   "permissions": [
     "activeTab",
@@ -35,12 +35,12 @@
   
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "D1 Student Profile Customizer",
-    "default_icon": "icons/icon-128.svg"
+    "default_title": "AACC D1 Student Profile Customizer",
+    "default_icon": "icons/aacc-logo.svg"
   },
   
   "icons": {
-    "128": "icons/icon-128.svg"
+    "128": "icons/aacc-logo.svg"
   },
   
   "web_accessible_resources": [

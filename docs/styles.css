@@ -7,16 +7,21 @@
 }
 
 :root {
-    /* AACC Brand Colors */
-    --aacc-blue: #003f7f;
-    --aacc-light-blue: #4a90a4;
-    --aacc-orange: #ff7f32;
+    /* AACC Official Brand Colors */
+    --aacc-teal: #2d8b8a;
+    --aacc-teal-light: #4da5a4;
+    --aacc-teal-dark: #236b6a;
+    --aacc-accent: #5bb5b4;
     --aacc-gray: #666666;
     --aacc-light-gray: #f5f5f5;
     
-    /* Extension Colors */
-    --primary-color: #007cba;
-    --primary-dark: #005a8a;
+    /* Primary Brand Colors (using AACC teal) */
+    --primary-color: var(--aacc-teal);
+    --primary-light: var(--aacc-teal-light);
+    --primary-dark: var(--aacc-teal-dark);
+    --accent-color: var(--aacc-accent);
+    
+    /* Supporting Colors */
     --secondary-color: #28a745;
     --warning-color: #ffc107;
     --danger-color: #dc3545;
@@ -25,15 +30,15 @@
     --text-dark: #212529;
     --text-light: #6c757d;
     --border-color: #dee2e6;
-    --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
+    --shadow: 0 2px 10px rgba(45, 139, 138, 0.1);
+    --shadow-lg: 0 4px 20px rgba(45, 139, 138, 0.15);
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: var(--text-dark);
-    background: linear-gradient(135deg, var(--aacc-blue), var(--aacc-light-blue));
+    background: linear-gradient(135deg, var(--aacc-teal), var(--aacc-teal-light));
     min-height: 100vh;
 }
 
@@ -80,13 +85,19 @@ body {
 }
 
 .aacc-logo img {
-    max-width: 80px;
+    max-width: 120px;
     height: auto;
     margin-bottom: 15px;
 }
 
+.aacc-brand-logo {
+    max-width: 150px !important;
+    height: auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
 .aacc-logo h1 {
-    color: var(--aacc-blue);
+    color: var(--aacc-teal);
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 8px;
@@ -194,12 +205,13 @@ body {
 }
 
 .logo {
-    max-width: 50px;
+    max-width: 80px;
     height: auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
 
 .title-group h1 {
-    color: var(--aacc-blue);
+    color: var(--aacc-teal);
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 4px;
