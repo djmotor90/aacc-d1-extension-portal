@@ -10,9 +10,11 @@ class D1ProfileCustomizer {
     private logger: D1Logger;
     private analyzer: D1PageAnalyzer;
     private manipulator: D1DOMManipulator;
+    private courseSectionHandler: D1CourseSectionHandler | null = null;
     private lastPageStructure: PageStructure | null = null;
     private lastAction = 'Initialized';
     private isEnabled = false;
+    private courseLinkEnabled = false;
     private originalPosition: { parent: HTMLElement; nextSibling: Node | null } | null = null;
     
     constructor() {
@@ -80,8 +82,8 @@ class D1ProfileCustomizer {
      * Initialize course section functionality
      */
     private async initializeCourseSection(): Promise<void> {
-        const courseSectionHandler = new D1CourseSectionHandler();
-        await courseSectionHandler.initialize();
+        this.courseSectionHandler = new D1CourseSectionHandler();
+        await this.courseSectionHandler.initialize();
         this.lastAction = 'Course Section public link functionality added';
     }
     
@@ -166,6 +168,49 @@ class D1ProfileCustomizer {
         }
     }
     
+    /**
+     * Toggle specific feature on or off
+     */
+    async toggleFeature(feature: string, enabled: boolean): Promise<boolean> {
+        try {
+            this.logger.info(`🔄 Toggling ${feature} ${enabled ? 'on' : 'off'}...`);
+            
+            if (feature === 'customFields') {
+                if (enabled) {
+                    return await this.enableEnhancement();
+                } else {
+                    return await this.disableEnhancement();
+                }
+            } else if (feature === 'courseLink') {
+                this.courseLinkEnabled = enabled;
+                
+                if (this.courseSectionHandler) {
+                    if (enabled) {
+                        await this.courseSectionHandler.initialize();
+                        this.logger.info('✅ Course link feature enabled');
+                    } else {
+                        this.courseSectionHandler.cleanup();
+                        this.logger.info('✅ Course link feature disabled');
+                    }
+                    return true;
+                } else if (enabled && this.analyzer.isCourseSectionPage()) {
+                    // Initialize course section handler if needed
+                    await this.initializeCourseSection();
+                    return true;
+                } else {
+                    this.logger.warn('⚠️ Course section handler not available');
+                    return false;
+                }
+            }
+            
+            this.logger.warn(`⚠️ Unknown feature: ${feature}`);
+            return false;
+        } catch (error) {
+            this.logger.error(`❌ Toggle ${feature} error:`, error);
+            return false;
+        }
+    }
+
     /**
      * Restore element to original position
      */
@@ -707,6 +752,17 @@ class D1CourseSectionHandler {
         document.body.appendChild(button);
         this.logger.info('🎯 Button appended to document body (fallback)');
     }
+
+    /**
+     * Clean up course section functionality (remove button)
+     */
+    cleanup(): void {
+        const button = document.getElementById(this.BUTTON_ID);
+        if (button) {
+            button.remove();
+            this.logger.info('✅ Course section button removed');
+        }
+    }
 }
 
 /**
@@ -771,6 +827,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const customizer = (window as any).d1Customizer;
         if (customizer) {
             customizer.forceCustomize().then((success) => {
+                sendResponse({ success: success });
+            });
+            return true; // Keep channel open for async response
+        } else {
+            sendResponse({ success: false, error: 'Extension not initialized' });
+        }
+        return;
+    }
+
+    if (message.action === 'toggleFeature') {
+        const customizer = (window as any).d1Customizer;
+        if (customizer) {
+            customizer.toggleFeature(message.feature, message.enabled).then((success) => {
                 sendResponse({ success: success });
             });
             return true; // Keep channel open for async response

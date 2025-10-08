@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AACC Pulse - Academic Workflow Enhancement Suite",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Official AACC tool that enhances academic workflows. Streamlines DestinyOne Student Profiles and generates public course links.",
   
   "permissions": [

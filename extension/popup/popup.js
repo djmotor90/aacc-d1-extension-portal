@@ -8,7 +8,7 @@
 class D1PopupController {
   constructor() {
     this.isEnabled = false;
-    this.currentVersion = '2.0.0';
+    this.currentVersion = '2.1.0';
     this.updateCheckUrl = 'https://djmotor90.github.io/aacc-d1-extension-portal/releases/';
     this.portalUrl = 'https://djmotor90.github.io/aacc-d1-extension-portal/';
     this.initializeElements();
@@ -19,7 +19,9 @@ class D1PopupController {
   
   initializeElements() {
     this.toggleSwitch = document.getElementById('extensionToggle');
+    this.courseLinkToggle = document.getElementById('courseLinkToggle');
     this.toggleDescription = document.getElementById('toggleDescription');
+    this.courseLinkDescription = document.getElementById('courseLinkDescription');
     this.statusDot = document.getElementById('statusDot');
     this.statusMessage = document.getElementById('statusMessage');
     
@@ -37,7 +39,8 @@ class D1PopupController {
   }
   
   attachEventListeners() {
-    this.toggleSwitch.addEventListener('change', (e) => this.handleToggle(e.target.checked));
+    this.toggleSwitch.addEventListener('change', (e) => this.handleToggle(e.target.checked, 'customFields'));
+    this.courseLinkToggle.addEventListener('change', (e) => this.handleToggle(e.target.checked, 'courseLink'));
     
     // Update-related event listeners
     if (this.updateButton) {
@@ -52,9 +55,11 @@ class D1PopupController {
   async loadCurrentStatus() {
     try {
       // Get stored extension state
-      const result = await chrome.storage.local.get(['extensionEnabled']);
-      this.isEnabled = result.extensionEnabled || false;
+      const result = await chrome.storage.local.get(['extensionEnabled', 'courseLinkEnabled']);
+      this.isEnabled = result.extensionEnabled !== false; // Default to true
+      this.courseLinkEnabled = result.courseLinkEnabled !== false; // Default to true
       this.toggleSwitch.checked = this.isEnabled;
+      this.courseLinkToggle.checked = this.courseLinkEnabled;
       
       const tab = await this.getCurrentTab();
       
@@ -64,18 +69,25 @@ class D1PopupController {
       }
       
       // Check if this is a D1 page
-      const isD1Page = this.isD1StudentProfilePage(tab.url);
+      const isD1Page = this.isD1StudentProfilePage(tab.url) || this.isD1CourseSectionPage(tab.url);
       
       if (!isD1Page) {
-        this.updateStatus('inactive', 'Navigate to a D1 Student Profile page');
+        this.updateStatus('inactive', 'Navigate to a D1 page (Student Profile or Course Section)');
         return;
       }
       
-      // Update status based on toggle state and page
-      if (this.isEnabled) {
-        this.updateStatus('active', 'Enhancement active on this page');
+      // Update status and descriptions based on toggle states and page type
+      const isProfilePage = this.isD1StudentProfilePage(tab.url);
+      const isCoursePage = this.isD1CourseSectionPage(tab.url);
+      
+      this.updateToggleDescriptions(isProfilePage, isCoursePage);
+      
+      // Update main status
+      const hasActiveFeature = (isProfilePage && this.isEnabled) || (isCoursePage && this.courseLinkEnabled);
+      if (hasActiveFeature) {
+        this.updateStatus('active', 'Features active on this page');
       } else {
-        this.updateStatus('ready', 'Ready - toggle to enable enhancement');
+        this.updateStatus('ready', 'Ready - toggle features to enable');
       }
       
     } catch (error) {
@@ -94,8 +106,33 @@ class D1PopupController {
   
   isD1StudentProfilePage(url) {
     return url.includes('studentProfile.do') || 
-           url.includes('studentProfile') ||
-           url.includes('destiny');
+           url.includes('studentProfile');
+  }
+
+  isD1CourseSectionPage(url) {
+    return url.includes('courseSectionProfile.do') && 
+           url.includes('courseId') && 
+           url.includes('sectionId');
+  }
+
+  updateToggleDescriptions(isProfilePage, isCoursePage) {
+    // Update Custom Fields toggle description
+    if (isProfilePage) {
+      this.toggleDescription.textContent = this.isEnabled ? 
+        'Custom Fields positioned below Student Status' : 
+        'Toggle to move Custom Fields below Student Status';
+    } else {
+      this.toggleDescription.textContent = 'Works on Student Profile pages';
+    }
+
+    // Update Course Link toggle description  
+    if (isCoursePage) {
+      this.courseLinkDescription.textContent = this.courseLinkEnabled ? 
+        'Copy Public Link button is available' : 
+        'Toggle to add Copy Public Link button';
+    } else {
+      this.courseLinkDescription.textContent = 'Works on Course Section pages';
+    }
   }
   
   async getContentScriptStatus(tabId) {
@@ -140,17 +177,34 @@ class D1PopupController {
     }
   }
   
-  async handleToggle(enabled) {
+  async handleToggle(enabled, feature) {
     try {
-      this.isEnabled = enabled;
-      
-      // Save state
-      await chrome.storage.local.set({ extensionEnabled: enabled });
+      // Update the appropriate state
+      if (feature === 'customFields') {
+        this.isEnabled = enabled;
+        await chrome.storage.local.set({ extensionEnabled: enabled });
+      } else if (feature === 'courseLink') {
+        this.courseLinkEnabled = enabled;
+        await chrome.storage.local.set({ courseLinkEnabled: enabled });
+      }
       
       const tab = await this.getCurrentTab();
       
-      if (!tab.id || !this.isD1StudentProfilePage(tab.url)) {
+      // Check if we're on a supported page for this feature
+      const isProfilePage = this.isD1StudentProfilePage(tab.url);
+      const isCoursePage = this.isD1CourseSectionPage(tab.url);
+      
+      if (!tab.id || (!isProfilePage && !isCoursePage)) {
         // Just update the toggle state, don't do anything else
+        this.loadCurrentStatus();
+        return;
+      }
+      
+      // Check if this feature applies to the current page
+      const featureApplies = (feature === 'customFields' && isProfilePage) || 
+                           (feature === 'courseLink' && isCoursePage);
+      
+      if (!featureApplies) {
         this.loadCurrentStatus();
         return;
       }
@@ -182,27 +236,37 @@ class D1PopupController {
       if (enabled) {
         // Send enable command to content script
         const response = await chrome.tabs.sendMessage(tab.id, {
-          action: 'enable'
+          action: 'toggleFeature',
+          feature: feature,
+          enabled: true
         });
         
         if (response && response.success) {
-          this.updateStatus('active', 'Enhancement activated');
+          this.updateStatus('active', `${feature === 'customFields' ? 'Custom Fields' : 'Course Link'} feature activated`);
         } else {
           const errorMsg = response?.error || 'Unknown error';
           this.updateStatus('error', `Failed to activate: ${errorMsg}`);
-          this.toggleSwitch.checked = false;
-          this.isEnabled = false;
+          // Revert the appropriate toggle
+          if (feature === 'customFields') {
+            this.toggleSwitch.checked = false;
+            this.isEnabled = false;
+          } else {
+            this.courseLinkToggle.checked = false;
+            this.courseLinkEnabled = false;
+          }
         }
       } else {
         // Send disable command to content script
         const response = await chrome.tabs.sendMessage(tab.id, {
-          action: 'disable'
+          action: 'toggleFeature',
+          feature: feature,
+          enabled: false
         });
         
         if (response && response.success) {
-          this.updateStatus('ready', 'Enhancement disabled');
+          this.updateStatus('ready', `${feature === 'customFields' ? 'Custom Fields' : 'Course Link'} feature disabled`);
         } else {
-          this.updateStatus('ready', 'Enhancement disabled (forced)');
+          this.updateStatus('ready', `${feature === 'customFields' ? 'Custom Fields' : 'Course Link'} feature disabled (forced)`);
         }
       }
       
@@ -210,8 +274,13 @@ class D1PopupController {
       console.error('[D1-Popup] Toggle error:', error);
       this.updateStatus('error', 'Communication failed - try refreshing page');
       // Revert toggle state on error
-      this.toggleSwitch.checked = !enabled;
-      this.isEnabled = !enabled;
+      if (feature === 'customFields') {
+        this.toggleSwitch.checked = !enabled;
+        this.isEnabled = !enabled;
+      } else {
+        this.courseLinkToggle.checked = !enabled;
+        this.courseLinkEnabled = !enabled;
+      }
     }
   }
 

@@ -7,7 +7,7 @@ class AAACExtensionPortal {
     constructor() {
         this.correctPassword = 'aacc2025';
         this.githubRepo = 'djmotor90/aacc-d1-extension-portal';
-        this.currentVersion = '2.0.0';
+        this.currentVersion = '2.1.0';
         this.sessionKey = 'aacc_portal_authenticated';
         this.updateCheckInterval = 5 * 60 * 1000; // Check every 5 minutes
         
