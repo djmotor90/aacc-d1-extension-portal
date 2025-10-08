@@ -316,25 +316,19 @@ class AAACExtensionPortal {
     }
     
     /**
-     * Fetch latest version from GitHub (simulated for demo)
+     * Get the latest version (returns current version since we're hosting the extension locally)
      */
     async fetchLatestVersion() {
-        // Simulate API call delay
+        // Simulate API call delay for UI feedback
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // In production, this would be:
+        // Return the current version since we're hosting the extension locally
+        // In production with GitHub releases, this would be:
         // const response = await fetch(`https://api.github.com/repos/${this.githubRepo}/releases/latest`);
         // const data = await response.json();
         // return data.tag_name.replace('v', '');
         
-        // For demo, simulate different scenarios
-        const scenarios = [
-            '1.0.0', // Same version
-            '1.0.1', // Patch update
-            '1.1.0', // Minor update
-        ];
-        
-        return scenarios[Math.floor(Math.random() * scenarios.length)];
+        return this.currentVersion;
     }
     
     /**
