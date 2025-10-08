@@ -475,14 +475,12 @@ class AAACExtensionPortal {
     }
     
     /**
-     * Download file (simulated for demo)
+     * Download the actual extension zip file
      */
     downloadFile(filename) {
-        // In production, this would download the actual extension zip
-        // For demo, we'll create a dummy download
-        
+        // Download the actual extension zip file from the releases directory
         const element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,D1%20Extension%20Package%20-%20Replace%20with%20actual%20zip%20file');
+        element.setAttribute('href', `./releases/${filename}`);
         element.setAttribute('download', filename);
         element.style.display = 'none';
         
