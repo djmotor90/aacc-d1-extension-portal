@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "AACC D1 Student Profile Customizer",
-  "version": "1.4.0",
-  "description": "Official AACC tool for DestinyOne - enhances Student Profiles and generates public course section links with auto-update checking",
+  "name": "AACC Pulse - Academic Workflow Enhancement Suite",
+  "version": "2.0.0",
+  "description": "Official AACC Pulse - Streamlines academic workflows across DestinyOne and LLEE systems. Enhances Student Profiles and generates public course section links.",
   
   "permissions": [
     "activeTab",
@@ -38,12 +38,12 @@
   
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "AACC D1 Student Profile Customizer",
-    "default_icon": "icons/aacc-logo.svg"
+    "default_title": "AACC Pulse - Academic Workflow Enhancement Suite",
+    "default_icon": "icons/logoaacc.png"
   },
   
   "icons": {
-    "128": "icons/aacc-logo.svg"
+    "128": "icons/logoaacc.png"
   },
   
   "web_accessible_resources": [

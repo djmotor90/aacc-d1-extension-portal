@@ -7,7 +7,7 @@ class AAACExtensionPortal {
     constructor() {
         this.correctPassword = 'aacc2025';
         this.githubRepo = 'djmotor90/aacc-d1-extension-portal';
-        this.currentVersion = '1.4.0';
+        this.currentVersion = '2.0.0';
         this.sessionKey = 'aacc_portal_authenticated';
         this.updateCheckInterval = 5 * 60 * 1000; // Check every 5 minutes
         
@@ -440,7 +440,7 @@ class AAACExtensionPortal {
             await new Promise(resolve => setTimeout(resolve, 2000));
             
             // Create download link (in production, this would be the actual zip file)
-            this.downloadFile('d1-extension-v' + (version || this.currentVersion) + '.zip');
+            this.downloadFile('aacc-pulse-v' + (version || this.currentVersion) + '.zip');
             
             this.updateStatusBanner('✅ Download completed successfully!', 'success');
             

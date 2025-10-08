@@ -1,15 +1,17 @@
-# D1 Student Profile Customizer
+# AACC Pulse - Academic Workflow Enhancement Suite
 
-A Chrome extension that enhances the DestinyOne Student Information System by moving the Custom Fields section below the Student Status section for improved workflow and accessibility.
+AACC Pulse is a comprehensive Chrome extension that enhances academic workflows across multiple systems for Anne Arundel Community College staff. Originally designed for DestinyOne, it now supports multiple platforms and will adapt to future LLEE systems.
 
 ## Features
 
-✅ **Automatic D1 Page Detection** - Detects DestinyOne Student Profile pages automatically  
-📍 **Smart Custom Fields Positioning** - Moves Custom Fields section below Student Status  
+🚀 **Multi-System Support** - Works with DestinyOne Student Profiles and Course Section pages  
+📍 **Smart Layout Enhancement** - Moves Custom Fields section below Student Status for better workflow  
+🔗 **Public Link Generation** - Creates public course section links automatically  
 🔍 **Enhanced Debugging** - Comprehensive logging and error handling  
-🎨 **Visual Indicators** - Clear visual feedback when sections are moved  
+� **Auto-Update Detection** - Checks for new versions and notifies users  
 ♿ **Accessibility Support** - Respects user preferences for motion and contrast  
 📱 **Responsive Design** - Works on various screen sizes  
+🎨 **AACC Official Branding** - Uses official Anne Arundel Community College styling  
 
 ## Installation
 
