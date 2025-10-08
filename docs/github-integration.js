@@ -178,6 +178,9 @@ class EnhancedExtensionPortal extends AAACExtensionPortal {
     setupRealGitHubIntegration() {
         // Override the fetchLatestVersion method
         this.fetchLatestVersion = this.fetchLatestVersionFromGitHub.bind(this);
+        
+        // Comment out download override since we're using local zip files
+        // this.handleDownload = this.handleDownloadFromGitHub.bind(this);
     }
     
     /**
@@ -203,9 +206,9 @@ class EnhancedExtensionPortal extends AAACExtensionPortal {
     }
     
     /**
-     * Enhanced download with real GitHub releases
+     * Enhanced download with real GitHub releases (disabled - using local zip instead)
      */
-    async handleDownload(version = null) {
+    async handleDownloadFromGitHub(version = null) {
         const downloadBtn = document.getElementById('downloadBtn');
         const originalText = downloadBtn?.innerHTML;
         

@@ -292,13 +292,13 @@
     <script src="script.js"></script>
     <script src="github-integration.js"></script>
     
-    <!-- Initialize Enhanced Portal with GitHub Integration -->
+    <!-- Use basic portal with local zip downloads -->
     <script>
-        // Override the default portal with enhanced version when available
+        // Using the basic portal for local zip file downloads
+        // GitHub integration disabled to prevent duplicate downloads
         document.addEventListener('DOMContentLoaded', () => {
-            if (window.EnhancedExtensionPortal) {
-                window.aaccPortal = new EnhancedExtensionPortal();
-            }
+            // The basic AAACExtensionPortal is initialized in script.js
+            console.log('Using basic portal with local extension downloads');
         });
     </script>
 </body>
