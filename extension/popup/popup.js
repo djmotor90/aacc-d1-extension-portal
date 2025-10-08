@@ -130,6 +130,30 @@ class D1PopupController {
         return;
       }
       
+      // First check if content script is ready
+      try {
+        await chrome.tabs.sendMessage(tab.id, { action: 'ping' });
+      } catch (pingError) {
+        // Content script not ready - inject it
+        console.log('[D1-Popup] Content script not ready, injecting...');
+        
+        try {
+          await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['dist/content.js']
+          });
+          
+          // Wait a bit for initialization
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (injectError) {
+          console.error('[D1-Popup] Failed to inject content script:', injectError);
+          this.updateStatus('error', 'Content script injection failed');
+          this.toggleSwitch.checked = !enabled;
+          this.isEnabled = !enabled;
+          return;
+        }
+      }
+      
       if (enabled) {
         // Send enable command to content script
         const response = await chrome.tabs.sendMessage(tab.id, {
@@ -139,7 +163,10 @@ class D1PopupController {
         if (response && response.success) {
           this.updateStatus('active', 'Enhancement activated');
         } else {
-          this.updateStatus('error', 'Failed to activate enhancement');
+          const errorMsg = response?.error || 'Unknown error';
+          this.updateStatus('error', `Failed to activate: ${errorMsg}`);
+          this.toggleSwitch.checked = false;
+          this.isEnabled = false;
         }
       } else {
         // Send disable command to content script
@@ -147,12 +174,16 @@ class D1PopupController {
           action: 'disable'
         });
         
-        this.updateStatus('ready', 'Enhancement disabled');
+        if (response && response.success) {
+          this.updateStatus('ready', 'Enhancement disabled');
+        } else {
+          this.updateStatus('ready', 'Enhancement disabled (forced)');
+        }
       }
       
     } catch (error) {
       console.error('[D1-Popup] Toggle error:', error);
-      this.updateStatus('error', 'Failed to update enhancement');
+      this.updateStatus('error', 'Communication failed - try refreshing page');
       // Revert toggle state on error
       this.toggleSwitch.checked = !enabled;
       this.isEnabled = !enabled;

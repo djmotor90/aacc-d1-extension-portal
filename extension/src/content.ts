@@ -92,16 +92,28 @@ class D1ProfileCustomizer {
      */
     async enableEnhancement(): Promise<boolean> {
         try {
+            this.logger.info('🔄 Enabling enhancement...');
             this.isEnabled = true;
             this.lastAction = 'Enhancement enabled';
             
+            if (!this.analyzer.isStudentProfilePage()) {
+                this.lastAction = 'Not on D1 Student Profile page';
+                this.logger.warn('⚠️ Not on D1 Student Profile page');
+                return false;
+            }
+            
             if (!this.lastPageStructure) {
                 this.lastPageStructure = this.analyzer.analyzePage();
+                if (this.lastPageStructure.customFieldsSection) {
+                    this.storeOriginalPosition(this.lastPageStructure.customFieldsSection);
+                }
             }
             
             const success = await this.customizePage(this.lastPageStructure);
+            this.logger.info(success ? '✅ Enhancement enabled successfully' : '❌ Enhancement enable failed');
             return success;
         } catch (error) {
+            this.logger.error('❌ Enable enhancement error:', error);
             this.lastAction = 'Enable error: ' + error;
             return false;
         }
@@ -112,15 +124,20 @@ class D1ProfileCustomizer {
      */
     async disableEnhancement(): Promise<boolean> {
         try {
+            this.logger.info('🔄 Disabling enhancement...');
             this.isEnabled = false;
             this.lastAction = 'Enhancement disabled';
             
             if (this.lastPageStructure?.customFieldsSection && this.originalPosition) {
                 this.restoreOriginalPosition(this.lastPageStructure.customFieldsSection);
+                this.logger.info('✅ Enhancement disabled and position restored');
+            } else {
+                this.logger.info('✅ Enhancement disabled (no restoration needed)');
             }
             
             return true;
         } catch (error) {
+            this.logger.error('❌ Disable enhancement error:', error);
             this.lastAction = 'Disable error: ' + error;
             return false;
         }
@@ -366,7 +383,8 @@ class D1DOMManipulator {
      * Check if Custom Fields section has already been moved
      */
     isAlreadyMoved(element: HTMLElement): boolean {
-        return !!element.querySelector(`#${this.MOVED_INDICATOR_ID}`);
+        return element.hasAttribute('data-d1-customizer-moved') || 
+               !!element.querySelector(`#${this.MOVED_INDICATOR_ID}`);
     }
     
     /**
