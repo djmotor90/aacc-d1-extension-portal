@@ -186,7 +186,7 @@ jobs:
 ## Testing Checklist
 
 ### Pre-Launch Testing:
-- [ ] Password protection works (`aacc2025`)
+- [ ] Password protection works (secure access code)
 - [ ] Session timeout (8 hours) functions properly
 - [ ] Download button creates proper zip file
 - [ ] GitHub integration fetches correct versions

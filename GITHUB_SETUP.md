@@ -81,7 +81,7 @@ git push origin main
 
 1. Wait 5-10 minutes for GitHub Pages to deploy
 2. Visit your GitHub Pages URL
-3. Test password: `aacc2025`
+3. Test password: Contact AACC IT for access credentials
 4. Verify all functionality works
 
 ## Step 7: Create First Extension Release

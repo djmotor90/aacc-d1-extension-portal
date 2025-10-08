@@ -40,7 +40,7 @@ def start_test_server():
             print("=" * 50)
             print(f"📍 Server running at: {url}")
             print(f"📁 Serving from: {website_dir}")
-            print(f"🔐 Password: aacc2025")
+            print(f"🔐 Access: Password protected (contact AACC IT)")
             print("=" * 50)
             print("⚠️  This is for testing only!")
             print("   Deploy to HTTPS server for production use.")

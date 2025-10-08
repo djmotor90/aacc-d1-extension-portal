@@ -4,7 +4,7 @@ A secure web portal for distributing and managing the DestinyOne Student Profile
 
 ## 🔐 Security Features
 
-- **Password Protection**: Access restricted with password `aacc2025`
+- **Password Protection**: Access restricted with secure access code (contact AACC IT)
 - **Session Management**: 8-hour session timeout for security
 - **AACC Staff Only**: Designed specifically for authorized AACC personnel
 
@@ -102,7 +102,7 @@ git push origin v1.0.1
 ## 🔧 Configuration
 
 ### Password Security
-- Default password: `aacc2025`
+- Default password: Contact AACC IT for access code
 - To change: Update `correctPassword` in `script.js` line ~10
 - Sessions expire after 8 hours automatically
 
@@ -119,7 +119,7 @@ git push origin v1.0.1
 
 ### For AACC Staff:
 1. Navigate to the portal URL
-2. Enter access code: `aacc2025`
+2. Enter access code: (provided by AACC IT)
 3. Click "Download Latest Version"
 4. Follow installation instructions
 5. Extension will work automatically on D1 pages
