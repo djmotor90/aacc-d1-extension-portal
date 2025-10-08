@@ -19,7 +19,7 @@ class AAACExtensionPortal {
      */
     async verifyPasswordHash(inputPassword) {
         // SHA-256 hash of 'aacc2025' 
-        const correctHash = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+        const correctHash = '28cac9fa2eed464795355db44a2f7594ed968a5953e1096b133a1175f1da0b33';
         
         try {
             const encoder = new TextEncoder();
