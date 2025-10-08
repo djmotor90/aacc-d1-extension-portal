@@ -8,7 +8,7 @@
 class D1PopupController {
   constructor() {
     this.isEnabled = false;
-    this.currentVersion = '1.3.0';
+    this.currentVersion = '1.4.0';
     this.updateCheckUrl = 'https://djmotor90.github.io/aacc-d1-extension-portal/releases/';
     this.portalUrl = 'https://djmotor90.github.io/aacc-d1-extension-portal/';
     this.initializeElements();

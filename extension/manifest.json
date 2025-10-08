@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "AACC D1 Student Profile Customizer",
-  "version": "1.3.0",
-  "description": "Official AACC tool for DestinyOne Student Profile interface - moves Custom Fields below Student Status with auto-update checking",
+  "version": "1.4.0",
+  "description": "Official AACC tool for DestinyOne - enhances Student Profiles and generates public course section links with auto-update checking",
   
   "permissions": [
     "activeTab",
@@ -22,7 +22,9 @@
       "matches": [
         "*://*.destinyone.moderncampus.net/srs/enrolmgr/student/profile/studentProfile.do*",
         "*://*/srs/enrolmgr/student/profile/studentProfile.do*",
-        "*://*/studentProfile*"
+        "*://*/studentProfile*",
+        "*://*.destinyone.moderncampus.net/srs/currmgr/course/courseSectionProfile.do*",
+        "*://*/srs/currmgr/course/courseSectionProfile.do*"
       ],
       "js": ["dist/content.js"],
       "css": ["styles/content.css"],

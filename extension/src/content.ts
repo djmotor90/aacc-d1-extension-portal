@@ -28,38 +28,61 @@ class D1ProfileCustomizer {
      */
     async initialize(): Promise<void> {
         try {
-            // Verify we're on the correct page
-            if (!this.analyzer.isStudentProfilePage()) {
-                this.logger.info('📄 Not on Student Profile page, exiting gracefully');
+            // Check what type of page we're on
+            const isStudentProfile = this.analyzer.isStudentProfilePage();
+            const isCourseSection = this.analyzer.isCourseSectionPage();
+            
+            if (!isStudentProfile && !isCourseSection) {
+                this.logger.info('📄 Not on a supported D1 page, exiting gracefully');
                 return;
             }
             
-            this.logger.info('✅ Confirmed we are on D1 Student Profile page');
+            this.logger.info(`✅ Detected D1 page type: ${isStudentProfile ? 'Student Profile' : 'Course Section'}`);
             this.logger.info(`🌐 Current URL: ${window.location.href}`);
             
-            // Analyze page structure but don't auto-customize
-            const pageStructure = this.analyzer.analyzePage();
-            this.lastPageStructure = pageStructure;
-            this.logger.logPageStructure(pageStructure);
-            
-            // Store original position for restoration
-            if (pageStructure.customFieldsSection) {
-                this.storeOriginalPosition(pageStructure.customFieldsSection);
-            }
-            
-            // Check stored extension state
-            const result = await chrome.storage.local.get(['extensionEnabled']);
-            this.isEnabled = result.extensionEnabled || false;
-            
-            // Apply enhancement if enabled
-            if (this.isEnabled) {
-                await this.customizePage(pageStructure);
+            if (isStudentProfile) {
+                await this.initializeStudentProfile();
+            } else if (isCourseSection) {
+                await this.initializeCourseSection();
             }
             
         } catch (error) {
-            this.logger.error('❌ Failed to initialize D1 Profile Customizer:', error);
+            this.logger.error('❌ Failed to initialize D1 extension:', error);
             this.lastAction = 'Failed to initialize: ' + error;
         }
+    }
+    
+    /**
+     * Initialize student profile functionality
+     */
+    private async initializeStudentProfile(): Promise<void> {
+        // Analyze page structure but don't auto-customize
+        const pageStructure = this.analyzer.analyzePage();
+        this.lastPageStructure = pageStructure;
+        this.logger.logPageStructure(pageStructure);
+        
+        // Store original position for restoration
+        if (pageStructure.customFieldsSection) {
+            this.storeOriginalPosition(pageStructure.customFieldsSection);
+        }
+        
+        // Check stored extension state
+        const result = await chrome.storage.local.get(['extensionEnabled']);
+        this.isEnabled = result.extensionEnabled || false;
+        
+        // Apply enhancement if enabled
+        if (this.isEnabled) {
+            await this.customizePage(pageStructure);
+        }
+    }
+    
+    /**
+     * Initialize course section functionality
+     */
+    private async initializeCourseSection(): Promise<void> {
+        const courseSectionHandler = new D1CourseSectionHandler();
+        await courseSectionHandler.initialize();
+        this.lastAction = 'Course Section public link functionality added';
     }
     
     /**
@@ -317,6 +340,20 @@ class D1PageAnalyzer {
         
         return indicators.some(check => check());
     }
+
+    /**
+     * Check if we're on a course section page
+     */
+    isCourseSectionPage(): boolean {
+        const indicators = [
+            () => window.location.href.includes('courseSectionProfile.do'),
+            () => window.location.href.includes('courseId=') && window.location.href.includes('sectionId='),
+            () => document.title.includes('Course Section'),
+            () => !!document.querySelector('form[name="courseSectionForm"]')
+        ];
+        
+        return indicators.some(check => check());
+    }
     
 
     
@@ -475,6 +512,200 @@ class D1DOMManipulator {
                 element.style.backgroundColor = originalBg;
             }, 2000);
         }, 300);
+    }
+}
+
+/**
+ * Course Section Public Link Generator
+ * Handles creating public links for course sections on AACC website
+ */
+class D1CourseSectionHandler {
+    private logger: D1Logger;
+    private readonly AACC_PUBLIC_TEMPLATE = 'https://noncredit.aacc.edu/search/publicCourseSectionDetails.do?method=load&courseId=XXXXXX&sectionId=XXXXXX';
+    private readonly BUTTON_ID = 'd1-copy-public-link-btn';
+    
+    constructor() {
+        this.logger = new D1Logger();
+    }
+    
+    /**
+     * Initialize course section functionality
+     */
+    async initialize(): Promise<void> {
+        try {
+            if (!this.isCourseSectionPage()) {
+                return;
+            }
+            
+            this.logger.info('🎯 Course Section page detected, adding public link functionality');
+            
+            const urlParams = this.extractUrlParameters();
+            if (!urlParams.courseId || !urlParams.sectionId) {
+                this.logger.warn('⚠️ Missing courseId or sectionId parameters');
+                return;
+            }
+            
+            const publicLink = this.generatePublicLink(urlParams.courseId, urlParams.sectionId);
+            this.addCopyLinkButton(publicLink);
+            
+            this.logger.success('✅ Public link functionality added successfully');
+            
+        } catch (error) {
+            this.logger.error('❌ Failed to initialize course section handler:', error);
+        }
+    }
+    
+    /**
+     * Check if we're on a course section page
+     */
+    private isCourseSectionPage(): boolean {
+        return window.location.href.includes('courseSectionProfile.do') &&
+               window.location.href.includes('courseId=') &&
+               window.location.href.includes('sectionId=');
+    }
+    
+    /**
+     * Extract courseId and sectionId from URL parameters
+     */
+    private extractUrlParameters(): { courseId: string | null; sectionId: string | null } {
+        const url = new URL(window.location.href);
+        const courseId = url.searchParams.get('courseId');
+        const sectionId = url.searchParams.get('sectionId');
+        
+        this.logger.info(`📋 Extracted parameters: courseId=${courseId}, sectionId=${sectionId}`);
+        
+        return { courseId, sectionId };
+    }
+    
+    /**
+     * Generate public AACC link using the template
+     */
+    private generatePublicLink(courseId: string, sectionId: string): string {
+        const publicLink = this.AACC_PUBLIC_TEMPLATE
+            .replace('XXXXXX', courseId)
+            .replace('XXXXXX', sectionId);
+            
+        this.logger.info(`🔗 Generated public link: ${publicLink}`);
+        return publicLink;
+    }
+    
+    /**
+     * Add "Copy Direct Public Link" button to the page
+     */
+    private addCopyLinkButton(publicLink: string): void {
+        // Remove existing button if present
+        const existingButton = document.getElementById(this.BUTTON_ID);
+        if (existingButton) {
+            existingButton.remove();
+        }
+        
+        // Create the button
+        const button = document.createElement('button');
+        button.id = this.BUTTON_ID;
+        button.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.71"/>
+            </svg>
+            Copy Direct Public Link to Section
+        `;
+        button.title = `Copy public link: ${publicLink}`;
+        button.style.cssText = `
+            background: linear-gradient(135deg, #2d8b8a, #236b6a);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(45, 139, 138, 0.2);
+        `;
+        
+        // Add hover effects
+        button.addEventListener('mouseenter', () => {
+            button.style.transform = 'translateY(-1px)';
+            button.style.boxShadow = '0 4px 8px rgba(45, 139, 138, 0.3)';
+        });
+        
+        button.addEventListener('mouseleave', () => {
+            button.style.transform = 'translateY(0)';
+            button.style.boxShadow = '0 2px 4px rgba(45, 139, 138, 0.2)';
+        });
+        
+        // Add click handler
+        button.addEventListener('click', () => this.copyToClipboard(publicLink, button));
+        
+        // Find a good place to insert the button
+        this.insertButtonInPage(button);
+    }
+    
+    /**
+     * Copy link to clipboard with user feedback
+     */
+    private async copyToClipboard(link: string, button: HTMLButtonElement): Promise<void> {
+        try {
+            await navigator.clipboard.writeText(link);
+            
+            // Success feedback
+            const originalContent = button.innerHTML;
+            button.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20,6 9,17 4,12"/>
+                </svg>
+                Link Copied!
+            `;
+            button.style.background = 'linear-gradient(135deg, #28a745, #20a744)';
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+                button.innerHTML = originalContent;
+                button.style.background = 'linear-gradient(135deg, #2d8b8a, #236b6a)';
+            }, 2000);
+            
+            this.logger.success('📋 Public link copied to clipboard');
+            
+        } catch (error) {
+            this.logger.error('❌ Failed to copy to clipboard:', error);
+            
+            // Fallback: show the link in an alert
+            alert(`Copy this public link:\n\n${link}`);
+        }
+    }
+    
+    /**
+     * Insert button at an appropriate location on the page
+     */
+    private insertButtonInPage(button: HTMLElement): void {
+        // Try to find a good insertion point
+        const insertionCandidates = [
+            // Try to find the page header or title area
+            () => document.querySelector('h1, h2, h3')?.parentElement,
+            () => document.querySelector('.pageHeader'),
+            () => document.querySelector('#content'),
+            () => document.querySelector('form'),
+            () => document.querySelector('.blueBorder'),
+            () => document.body
+        ];
+        
+        for (const candidate of insertionCandidates) {
+            const element = candidate();
+            if (element) {
+                // Insert at the beginning of the found element
+                element.insertBefore(button, element.firstChild);
+                this.logger.info(`🎯 Button inserted into: ${element.tagName}.${element.className}`);
+                return;
+            }
+        }
+        
+        // Fallback: append to body
+        document.body.appendChild(button);
+        this.logger.info('🎯 Button appended to document body (fallback)');
     }
 }
 
