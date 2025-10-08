@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "AACC D1 Student Profile Customizer",
-  "version": "1.2.0",
-  "description": "Official AACC tool for DestinyOne Student Profile interface - moves Custom Fields below Student Status",
+  "version": "1.3.0",
+  "description": "Official AACC tool for DestinyOne Student Profile interface - moves Custom Fields below Student Status with auto-update checking",
   
   "permissions": [
     "activeTab",
@@ -13,7 +13,8 @@
   "host_permissions": [
     "*://*.destinyone.moderncampus.net/*",
     "*://*/srs/enrolmgr/student/profile/studentProfile.do*",
-    "*://*/studentProfile*"
+    "*://*/studentProfile*",
+    "https://djmotor90.github.io/*"
   ],
   
   "content_scripts": [

@@ -8,9 +8,13 @@
 class D1PopupController {
   constructor() {
     this.isEnabled = false;
+    this.currentVersion = '1.3.0';
+    this.updateCheckUrl = 'https://djmotor90.github.io/aacc-d1-extension-portal/releases/';
+    this.portalUrl = 'https://djmotor90.github.io/aacc-d1-extension-portal/';
     this.initializeElements();
     this.attachEventListeners();
     this.loadCurrentStatus();
+    this.checkForUpdates();
   }
   
   initializeElements() {
@@ -18,10 +22,31 @@ class D1PopupController {
     this.toggleDescription = document.getElementById('toggleDescription');
     this.statusDot = document.getElementById('statusDot');
     this.statusMessage = document.getElementById('statusMessage');
+    
+    // Update-related elements
+    this.updateNotification = document.getElementById('updateNotification');
+    this.updateVersion = document.getElementById('updateVersion');
+    this.updateButton = document.getElementById('updateButton');
+    this.currentVersionSpan = document.getElementById('currentVersion');
+    this.checkUpdateBtn = document.getElementById('checkUpdateBtn');
+    
+    // Set current version
+    if (this.currentVersionSpan) {
+      this.currentVersionSpan.textContent = this.currentVersion;
+    }
   }
   
   attachEventListeners() {
     this.toggleSwitch.addEventListener('change', (e) => this.handleToggle(e.target.checked));
+    
+    // Update-related event listeners
+    if (this.updateButton) {
+      this.updateButton.addEventListener('click', () => this.handleUpdateDownload());
+    }
+    
+    if (this.checkUpdateBtn) {
+      this.checkUpdateBtn.addEventListener('click', () => this.checkForUpdates(true));
+    }
   }
   
   async loadCurrentStatus() {
@@ -187,6 +212,121 @@ class D1PopupController {
       // Revert toggle state on error
       this.toggleSwitch.checked = !enabled;
       this.isEnabled = !enabled;
+    }
+  }
+
+  /**
+   * Check for extension updates
+   */
+  async checkForUpdates(manual = false) {
+    try {
+      if (manual && this.checkUpdateBtn) {
+        this.checkUpdateBtn.style.transform = 'rotate(180deg)';
+      }
+
+      // Simulate checking by fetching the portal page
+      const response = await fetch(`${this.portalUrl}script.js`);
+      const scriptContent = await response.text();
+      
+      // Extract version from the portal script
+      const versionMatch = scriptContent.match(/currentVersion\s*=\s*['"]([^'"]+)['"]/);
+      const latestVersion = versionMatch ? versionMatch[1] : this.currentVersion;
+      
+      if (this.isNewerVersion(latestVersion, this.currentVersion)) {
+        this.showUpdateNotification(latestVersion);
+        
+        if (manual) {
+          this.showUpdateDialog(latestVersion);
+        }
+      } else if (manual) {
+        this.showNoUpdateDialog();
+      }
+      
+    } catch (error) {
+      console.error('Error checking for updates:', error);
+      if (manual) {
+        this.showUpdateErrorDialog();
+      }
+    } finally {
+      if (manual && this.checkUpdateBtn) {
+        setTimeout(() => {
+          this.checkUpdateBtn.style.transform = 'rotate(0deg)';
+        }, 500);
+      }
+    }
+  }
+
+  /**
+   * Compare version strings
+   */
+  isNewerVersion(latest, current) {
+    const latestParts = latest.split('.').map(Number);
+    const currentParts = current.split('.').map(Number);
+    
+    for (let i = 0; i < Math.max(latestParts.length, currentParts.length); i++) {
+      const latestPart = latestParts[i] || 0;
+      const currentPart = currentParts[i] || 0;
+      
+      if (latestPart > currentPart) return true;
+      if (latestPart < currentPart) return false;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Show update notification in popup
+   */
+  showUpdateNotification(version) {
+    if (this.updateNotification && this.updateVersion) {
+      this.updateVersion.textContent = `v${version}`;
+      this.updateNotification.style.display = 'flex';
+    }
+  }
+
+  /**
+   * Handle update download button click
+   */
+  handleUpdateDownload() {
+    // Open the portal in a new tab for download
+    chrome.tabs.create({
+      url: this.portalUrl,
+      active: true
+    });
+  }
+
+  /**
+   * Show update available dialog
+   */
+  showUpdateDialog(version) {
+    const message = `🆕 New version available!\n\n` +
+                   `Current: v${this.currentVersion}\n` +
+                   `Latest: v${version}\n\n` +
+                   `Click OK to open the download portal.`;
+                   
+    if (confirm(message)) {
+      this.handleUpdateDownload();
+    }
+  }
+
+  /**
+   * Show no update available dialog
+   */
+  showNoUpdateDialog() {
+    alert(`✅ You have the latest version!\n\nCurrent version: v${this.currentVersion}`);
+  }
+
+  /**
+   * Show update check error dialog
+   */
+  showUpdateErrorDialog() {
+    const message = `❌ Unable to check for updates\n\n` +
+                   `Please check your internet connection\n` +
+                   `or visit the portal manually:\n\n` +
+                   `${this.portalUrl}`;
+                   
+    if (confirm(message + '\n\nOpen portal now?')) {
+      this.handleUpdateDownload();
     }
   }
 }
